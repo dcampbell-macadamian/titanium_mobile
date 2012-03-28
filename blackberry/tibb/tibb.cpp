@@ -6,8 +6,9 @@
  */
 
 #include "tibb.h"
+#include "TitaniumRuntime.h"
 
 int tibb_run(const char* javaScript, int argc, char** argv)
 {
-    return 0;
+    return TitaniumRuntime::run(javaScript, argc, argv);
 }

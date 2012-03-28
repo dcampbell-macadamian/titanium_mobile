@@ -13,7 +13,8 @@ EXTRA_INCVPATH+=$(QNX_TARGET)/usr/include/freetype2 \
 
 # Extra library search path for target overrides and patches
 EXTRA_LIBVPATH+=$(QNX_TARGET)/../target-override/$(CPUVARDIR)/lib \
-	$(QNX_TARGET)/../target-override/$(CPUVARDIR)/usr/lib
+	$(QNX_TARGET)/../target-override/$(CPUVARDIR)/usr/lib \
+	$(PROJECT_ROOT)/../libv8/lib/$(CPU)
 
 # Compiler options for enhanced security and recording the compiler options in release builds
 CCFLAGS+=-fstack-protector-all -D_FORTIFY_SOURCE=2 \
@@ -24,7 +25,7 @@ CCFLAGS+=-fstack-protector-all -D_FORTIFY_SOURCE=2 \
 LDFLAGS+=-Wl,-z,relro -Wl,-z,now $(if $(filter g so shared,$(VARIANTS)),,-pie)
 
 # Add your required library names, here
-LIBS+=
+LIBS+=v8 v8preparser
 
 include $(MKFILES_ROOT)/qmacros.mk
 
