@@ -6,39 +6,54 @@
  */
 
 #include "TiUIBase.h"
+#include "TiGenericFunctionObject.h"
 
 TiUIBase::TiUIBase()
 {
-    cascadesApp_=NULL;
-    container_=NULL;
+    nativeObjectFactory_ = NULL;
+    nativeObject_ = NULL;
 }
 
 TiUIBase::~TiUIBase()
 {
-	if(!createConfig_.IsEmpty())
-	{
-		createConfig_.Dispose();
-	}
+    if (!createConfig_.IsEmpty())
+    {
+        createConfig_.Dispose();
+    }
+    if (nativeObject_ != NULL)
+    {
+        nativeObject_->release();
+        nativeObject_ = NULL;
+    }
 }
 
-TiUIBase::TiUIBase(TiCascadesApp& app,const char* name):
-        TiObject(name)
+TiUIBase::TiUIBase(NativeObjectFactory* nativeObjectFactory, const char* name)
+        : TiObject(name)
 {
-    cascadesApp_=&app;
-    container_=NULL;
+    nativeObjectFactory_ = nativeObjectFactory;
+    nativeObject_ = NULL;
 }
 
-TiCascadesApp* TiUIBase::getCascadesApp() const
+bool TiUIBase::isUIObject() const
 {
-    return cascadesApp_;
+    return true;
 }
 
-void TiUIBase::onSetProperty(const char* propertyName,Local<Value> value)
+NativeObjectFactory* TiUIBase::getNativeObjectFactory() const
 {
-    char* str=TiObject::getStringFromObject(value,"");
-    if(strcmpi(propertyName,"backgroundColor")==0)
+    return nativeObjectFactory_;
+}
+
+void TiUIBase::onSetProperty(const char* propertyName, Local<Value> value)
+{
+    char* str = TiObject::getStringFromObject(value, "");
+    if (strcmpi(propertyName, "backgroundColor") == 0)
     {
         onSetBackgroundColor(str);
+    }
+    else if (strcmpi(propertyName, "text") == 0)
+    {
+        onSetText(str);
     }
     TiObject::freeString(str);
 }
@@ -48,51 +63,102 @@ bool TiUIBase::canAddMembers() const
     return true;
 }
 
-UIHANDLE TiUIBase::getContainerHandle() const
+NativeObject* TiUIBase::getNativeObject() const
 {
-    return container_;
+    if (nativeObject_ != NULL)
+    {
+        nativeObject_->addRef();
+    }
+    return nativeObject_;
 }
 
-void TiUIBase::setContainerHandle(UIHANDLE container)
+void TiUIBase::setNativeObject(NativeObject* nativeObject)
 {
-    container_=container;
+    if (nativeObject != NULL)
+    {
+        nativeObject->addRef();
+    }
+    if (nativeObject_ != NULL)
+    {
+        nativeObject_->release();
+    }
+    nativeObject_ = nativeObject;
+}
+
+void TiUIBase::onCreateStaticMembers()
+{
+    TiObject::onCreateStaticMembers();
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "setBackgroundColor", this, setBackgroundColor_);
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "setText", this, setText_);
+    TiGenericFunctionObject::addGenericFunctionToParent(this, "add", this, add_);
 }
 
 void TiUIBase::setParametersFromObject(Local<Object> obj)
 {
     HandleScope handleScope;
-	Local<Value> value;
-	char* str;
-	value=obj->Get(String::New("backgroundColor"));
-	if(!value.IsEmpty())
-	{
-		str=TiObject::getStringFromObject(value,"#000");
-		onSetBackgroundColor(str);
-		TiObject::freeString(str);
-	}
+    Local < Value > value;
+    char* str;
+    value = obj->Get(String::New("backgroundColor"));
+    if (!value.IsEmpty())
+    {
+        str = TiObject::getStringFromObject(value, "#000");
+        onSetBackgroundColor(str);
+        TiObject::freeString(str);
+    }
+    value = obj->Get(String::New("color"));
+    if (!value.IsEmpty())
+    {
+        str = TiObject::getStringFromObject(value, "#000");
+        onSetColor(str);
+        TiObject::freeString(str);
+    }
+    value = obj->Get(String::New("text"));
+    if (!value.IsEmpty())
+    {
+        str = TiObject::getStringFromObject(value, "");
+        onSetText(str);
+        TiObject::freeString(str);
+    }
 }
 
 void TiUIBase::onSetBackgroundColor(const char* color)
 {
-    getCascadesApp()->setBackgroundColor(getContainerHandle(),color);
+    NativeObject* obj = getNativeObject();
+    if (obj != NULL)
+    {
+        obj->setBackgroundColor(color);
+        obj->release();
+    }
 }
 
-Handle<Value> TiUIBase::setBackgroundColor_(void* userContext,
-                                            TiObject* caller,
-                                            const Arguments& args)
+void TiUIBase::onSetText(const char* text)
+{
+    NativeObject* obj = getNativeObject();
+    obj->setText(text);
+    obj->release();
+}
+
+void TiUIBase::onSetColor(const char* color)
+{
+    NativeObject* obj = getNativeObject();
+    obj->setColor(color);
+    obj->release();
+}
+
+Handle<Value> TiUIBase::setBackgroundColor_(void* userContext, TiObject* caller, const Arguments& args)
 {
     HandleScope handleScope;
-    TiUIBase* obj=(TiUIBase*)userContext;
-    if(args.Length()<1)
+    TiUIBase* obj = (TiUIBase*) userContext;
+    if (args.Length() < 1)
     {
         // TODO: throw an exception
         return Undefined();
     }
-    if(args[0]->IsString())
+    if (args[0]->IsString())
     {
-        Handle < String > colStr=Handle<String>::Cast(args[0]);
+        Handle < String > colStr = Handle < String > ::Cast(args[0]);
         String::Utf8Value utfColStr(colStr);
-        const char* c=(const char*)(*utfColStr);
+        const char* c = (const char*) (*utfColStr);
         obj->onSetBackgroundColor(c);
     }
     else
@@ -103,3 +169,43 @@ Handle<Value> TiUIBase::setBackgroundColor_(void* userContext,
     return Undefined();
 }
 
+Handle<Value> TiUIBase::setText_(void* userContext, TiObject* caller, const Arguments& args)
+{
+    HandleScope handleScope;
+    TiUIBase* obj = (TiUIBase*) userContext;
+    if (args.Length() < 1)
+    {
+        // TODO: throw an exception
+        return Undefined();
+    }
+    char* str;
+    str = TiObject::getStringFromObject(args[0], "");
+    obj->onSetText(str);
+    TiObject::freeString(str);
+    return Undefined();
+}
+
+Handle<Value> TiUIBase::add_(void* userContext, TiObject* caller, const Arguments& args)
+{
+    HandleScope handleScope;
+    TiUIBase* obj = (TiUIBase*) userContext;
+    if ((args.Length() > 0) && (args[0]->IsObject()))
+    {
+        TiObject* addObj = getTiObjectFromJsObject(args[0]);
+        if ((addObj == NULL) || (!addObj->isUIObject()))
+        {
+            return Undefined();
+        }
+        TiUIBase* uiObj = (TiUIBase*) addObj;
+        NativeObject* childNO = uiObj->getNativeObject();
+        NativeObject* parentNO = obj->getNativeObject();
+        parentNO->addChildNativeObject(childNO);
+        childNO->release();
+        parentNO->release();
+    }
+    else
+    {
+        // TODO: throw exception
+    }
+    return Undefined();
+}

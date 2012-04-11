@@ -10,8 +10,6 @@
 
 #include "TiObject.h"
 
-class TiCascadesApp;
-
 using namespace std;
 
 struct FUNCTION_ENTRY;
@@ -20,7 +18,7 @@ class TiRootObject : public TiObject
 {
 public:
     static TiRootObject* createRootObject();
-    int executeScript(TiCascadesApp& app,const char* javaScript);
+    int executeScript(NativeObjectFactory* objectFactory, const char* javaScript);
 protected:
     virtual ~TiRootObject();
     virtual void onCreateStaticMembers();
@@ -29,7 +27,7 @@ private:
 
     Persistent<Context> context_;
     Handle<ObjectTemplate> globalTemplate_;
-    TiCascadesApp* cascadesApp_;
+    NativeObjectFactory* objectFactory_;
 };
 
 #endif /* TIROOTOBJECT_H_ */

@@ -18,6 +18,8 @@
 #include <string.h>
 
 #include "TiObjectScope.h"
+#include "NativeObject.h"
+#include "NativeObjectFactory.h"
 
 #include <v8.h>
 
@@ -48,17 +50,22 @@ public:
     TiObject(const char* objectName);
     TiObject(const char* objectName, Handle<Value> value);
     virtual ~TiObject();
-    static char* getStringFromObject(Handle<Value> value,const char* defaultString);
+    static char* getStringFromObject(Handle<Value> value, const char* defaultString);
     static void freeString(char* str);
+    static TiObject* getTiObjectFromJsObject(Handle<Value> value);
+    static void setTiObjectToJsObject(Handle<Value> jsObject, TiObject* tiObj);
+    static Handle<ObjectTemplate> getObjectTemplateFromJsObject(Handle<Value> value);
     void addRef();
     void release();
     virtual const char* getName() const;
     virtual void addMember(TiObject* object, const char* name = NULL);
     virtual Handle<Value> getValue();
+    virtual void setValue(Handle<Value> value);
     virtual bool hasMembers();
     virtual bool isFunction() const;
     virtual bool canAddMembers() const;
     virtual bool hasInitialized() const;
+    virtual bool isUIObject() const;
 protected:
     virtual void initializeTiObject(TiObject* parentObject);
     virtual Handle<Value> onFunctionCall(const Arguments& args);
@@ -67,12 +74,10 @@ protected:
     virtual void onSetGetPropertyCallback(Handle<ObjectTemplate>* objTemplate);
     virtual void onSetFunctionCallback(Handle<ObjectTemplate>* objTemplate);
     virtual bool userCanAddMember(const char* propertyName);
-    virtual void onSetProperty(const char* propertyName,Local<Value> value);
+    virtual void onSetProperty(const char* propertyName, Local<Value> value);
 private:
-    static Handle<Value> propGetter_(Local<String> prop,
-                                     const AccessorInfo& info);
-    static Handle<Value> propSetter_(Local<String> prop, Local<Value> value,
-                                     const AccessorInfo& info);
+    static Handle<Value> propGetter_(Local<String> prop, const AccessorInfo& info);
+    static Handle<Value> propSetter_(Local<String> prop, Local<Value> value, const AccessorInfo& info);
     static Handle<Value> functCallback_(const Arguments& args);
     Persistent<Value> value_;
 
