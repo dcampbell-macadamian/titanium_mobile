@@ -39,7 +39,7 @@ int TiRootObject::executeScript(NativeObjectFactory* objectFactory, const char* 
 {
     HandleScope handleScope;
     objectFactory_ = objectFactory;
-    initializeTiObject(NULL);
+    initializeTiObject (NULL);
     globalTemplate_ = ObjectTemplate::New();
     globalTemplate_->SetInternalFieldCount(2);
     onSetGetPropertyCallback(&globalTemplate_);
@@ -65,6 +65,7 @@ int TiRootObject::executeScript(NativeObjectFactory* objectFactory, const char* 
         printf("%s\n", *error);
         return -1;
     }
+    onStartMessagePump();
     return 0;
 }
 

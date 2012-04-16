@@ -10,6 +10,12 @@
 
 #include "TiUIBase.h"
 
+/*
+ * Represents a Titanium window object
+ *
+ * This object can be created by:
+ * Titanium.UI.createWindow({...});
+ */
 class TiUIWindow : public TiUIBase
 {
 public:

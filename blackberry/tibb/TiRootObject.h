@@ -13,7 +13,9 @@
 using namespace std;
 
 struct FUNCTION_ENTRY;
-
+/*
+ * Root namespace in Titanium
+ */
 class TiRootObject : public TiObject
 {
 public:

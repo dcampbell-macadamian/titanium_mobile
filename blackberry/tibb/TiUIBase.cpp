@@ -7,6 +7,15 @@
 
 #include "TiUIBase.h"
 #include "TiGenericFunctionObject.h"
+#include "TiPropertySetFunctionObject.h"
+#include "TiPropertyMapObject.h"
+
+const static TI_PROPERTY g_tiProperties[] =
+{
+    {"text", "setText", "",TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE, N_PROP_SET_TEXT},
+    {"textAlign", "setTextAlign", "center", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_SET_TEXT_ALIGN}
+};
 
 TiUIBase::TiUIBase()
 {
@@ -34,6 +43,15 @@ TiUIBase::TiUIBase(NativeObjectFactory* nativeObjectFactory, const char* name)
     nativeObject_ = NULL;
 }
 
+void TiUIBase::onStartMessagePump()
+{
+    if (nativeObject_ != NULL)
+    {
+        nativeObject_->completeInitialization();
+    }
+    TiObject::onStartMessagePump();
+}
+
 bool TiUIBase::isUIObject() const
 {
     return true;
@@ -42,20 +60,6 @@ bool TiUIBase::isUIObject() const
 NativeObjectFactory* TiUIBase::getNativeObjectFactory() const
 {
     return nativeObjectFactory_;
-}
-
-void TiUIBase::onSetProperty(const char* propertyName, Local<Value> value)
-{
-    char* str = TiObject::getStringFromObject(value, "");
-    if (strcmpi(propertyName, "backgroundColor") == 0)
-    {
-        onSetBackgroundColor(str);
-    }
-    else if (strcmpi(propertyName, "text") == 0)
-    {
-        onSetText(str);
-    }
-    TiObject::freeString(str);
 }
 
 bool TiUIBase::canAddMembers() const
@@ -70,6 +74,21 @@ NativeObject* TiUIBase::getNativeObject() const
         nativeObject_->addRef();
     }
     return nativeObject_;
+}
+
+void TiUIBase::setTiMappingProperties(const TI_PROPERTY* prop, int propertyCount)
+{
+    int i;
+    for (i = 0; i < propertyCount; i++)
+    {
+        TiObject* value = TiPropertyMapObject::addProperty(this, prop[i].propertyName, prop[i].nativePropertyNumber,
+                                                           valueModify, this);
+        if ((prop[i].permissions & TI_PROP_PERMISSION_WRITE) && (prop[i].propertySetterFunctionName != NULL))
+        {
+            TiPropertySetFunctionObject::addPropertySetter(this, value, prop[i].propertySetterFunctionName);
+        }
+        value->release();
+    }
 }
 
 void TiUIBase::setNativeObject(NativeObject* nativeObject)
@@ -88,101 +107,54 @@ void TiUIBase::setNativeObject(NativeObject* nativeObject)
 void TiUIBase::onCreateStaticMembers()
 {
     TiObject::onCreateStaticMembers();
-    TiGenericFunctionObject::addGenericFunctionToParent(this, "setBackgroundColor", this, setBackgroundColor_);
-    TiGenericFunctionObject::addGenericFunctionToParent(this, "setText", this, setText_);
     TiGenericFunctionObject::addGenericFunctionToParent(this, "add", this, add_);
+    setTiMappingProperties(g_tiProperties, sizeof(g_tiProperties) / sizeof(*g_tiProperties));
 }
 
 void TiUIBase::setParametersFromObject(Local<Object> obj)
 {
     HandleScope handleScope;
-    Local < Value > value;
-    char* str;
-    value = obj->Get(String::New("backgroundColor"));
-    if (!value.IsEmpty())
+    int i;
+    Handle < Value > value;
+    Handle < Value > controlValue = getValue();
+    if (!controlValue->IsObject())
     {
-        str = TiObject::getStringFromObject(value, "#000");
-        onSetBackgroundColor(str);
-        TiObject::freeString(str);
+        return;
     }
-    value = obj->Get(String::New("color"));
-    if (!value.IsEmpty())
+    Handle < Object > self = Handle < Object > ::Cast(controlValue);
+    for (i = 0; i < (int) (sizeof(g_tiProperties) / sizeof(*g_tiProperties)); i++)
     {
-        str = TiObject::getStringFromObject(value, "#000");
-        onSetColor(str);
-        TiObject::freeString(str);
-    }
-    value = obj->Get(String::New("text"));
-    if (!value.IsEmpty())
-    {
-        str = TiObject::getStringFromObject(value, "");
-        onSetText(str);
-        TiObject::freeString(str);
+        value = obj->Get(String::New(g_tiProperties[i].propertyName));
+        if (!value.IsEmpty())
+        {
+            self->Set(String::New(g_tiProperties[i].propertyName), value);
+        }
     }
 }
 
-void TiUIBase::onSetBackgroundColor(const char* color)
+VALUE_MODIFY TiUIBase::valueModify(int propertyNumber, const char* value, void* context)
 {
-    NativeObject* obj = getNativeObject();
-    if (obj != NULL)
+    TiUIBase* self = (TiUIBase*) context;
+    NativeObject* object = self->getNativeObject();
+    VALUE_MODIFY modify = VALUE_MODIFY_ALLOW;
+    if (object == NULL)
     {
-        obj->setBackgroundColor(color);
-        obj->release();
+        return VALUE_MODIFY_NOT_SUPPORTED;
     }
-}
-
-void TiUIBase::onSetText(const char* text)
-{
-    NativeObject* obj = getNativeObject();
-    obj->setText(text);
-    obj->release();
-}
-
-void TiUIBase::onSetColor(const char* color)
-{
-    NativeObject* obj = getNativeObject();
-    obj->setColor(color);
-    obj->release();
-}
-
-Handle<Value> TiUIBase::setBackgroundColor_(void* userContext, TiObject* caller, const Arguments& args)
-{
-    HandleScope handleScope;
-    TiUIBase* obj = (TiUIBase*) userContext;
-    if (args.Length() < 1)
+    switch (object->setPropertyValue(propertyNumber, value))
     {
-        // TODO: throw an exception
-        return Undefined();
+    case NATIVE_ERROR_OK:
+        modify = VALUE_MODIFY_ALLOW;
+        break;
+    case NATIVE_ERROR_NOTSUPPORTED:
+        modify = VALUE_MODIFY_NOT_SUPPORTED;
+        break;
+    default:
+        modify = VALUE_MODIFY_INVALID;
+        break;
     }
-    if (args[0]->IsString())
-    {
-        Handle < String > colStr = Handle < String > ::Cast(args[0]);
-        String::Utf8Value utfColStr(colStr);
-        const char* c = (const char*) (*utfColStr);
-        obj->onSetBackgroundColor(c);
-    }
-    else
-    {
-        // TODO: throw an exception
-        return Undefined();
-    }
-    return Undefined();
-}
-
-Handle<Value> TiUIBase::setText_(void* userContext, TiObject* caller, const Arguments& args)
-{
-    HandleScope handleScope;
-    TiUIBase* obj = (TiUIBase*) userContext;
-    if (args.Length() < 1)
-    {
-        // TODO: throw an exception
-        return Undefined();
-    }
-    char* str;
-    str = TiObject::getStringFromObject(args[0], "");
-    obj->onSetText(str);
-    TiObject::freeString(str);
-    return Undefined();
+    object->release();
+    return modify;
 }
 
 Handle<Value> TiUIBase::add_(void* userContext, TiObject* caller, const Arguments& args)
@@ -205,7 +177,7 @@ Handle<Value> TiUIBase::add_(void* userContext, TiObject* caller, const Argument
     }
     else
     {
-        // TODO: throw exception
+        // TODO: expand this excaption
     }
     return Undefined();
 }

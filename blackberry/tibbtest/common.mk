@@ -30,7 +30,7 @@ LDFLAGS+=-Wl,-z,relro -Wl,-z,now $(if $(filter g so shared,$(VARIANTS)),,-pie)
 LIBS+=tibb QtCascades_main v8 v8preparser
 
 # Extra .so required
-LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm
+LDFLAGS+=-lQtCascades -lQtCore -lQtDeclarative -lQtGui -lQtMultimedia -lQtNetwork -lm -lbb
 LDFLAGS+=-lQtOpenGL -lQtScript -lQtScriptTools -lQtSql -lQtSvg -lQtTest -lQtXml -lheimdall 
 
 include $(MKFILES_ROOT)/qmacros.mk

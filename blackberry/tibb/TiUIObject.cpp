@@ -40,34 +40,13 @@ void TiUIObject::addObjectToParent(TiObject* parent, NativeObjectFactory* object
 
 void TiUIObject::onCreateStaticMembers()
 {
-
     TiGenericFunctionObject::addGenericFunctionToParent(this, "createTabGroup", this, createTabGroup_);
     TiGenericFunctionObject::addGenericFunctionToParent(this, "createWindow", this, createWindow_);
     TiGenericFunctionObject::addGenericFunctionToParent(this, "createLabel", this, createLabel_);
-    TiGenericFunctionObject::addGenericFunctionToParent(this, "setBackgroundColor", this, setBackgroundColor_);
 }
 
 Handle<Value> TiUIObject::createTabGroup_(void* userContext, TiObject* caller, const Arguments& args)
 {
-    return Undefined();
-}
-
-Handle<Value> TiUIObject::setBackgroundColor_(void* userContext, TiObject* caller, const Arguments& args)
-{
-    HandleScope handleScope;
-    TiUIObject* obj = (TiUIObject*) userContext;
-    if (args.Length() < 1)
-    {
-        // TODO: throw an exception
-        return Undefined();
-    }
-    char* str;
-    str = TiObject::getStringFromObject(args[0], "#000");
-    if (obj->contentContainer_ != NULL)
-    {
-        obj->contentContainer_->setBackgroundColor(str);
-    }
-    TiObject::freeString(str);
     return Undefined();
 }
 

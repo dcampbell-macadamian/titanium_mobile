@@ -10,17 +10,19 @@
 
 #include "TiUIBase.h"
 
+/*
+ * Represents a Titanium label object
+ *
+ * This object can be created by:
+ * Titanium.UI.createLabel({...});
+ */
 class TiUILabel : public TiUIBase
 {
 public:
     static TiUILabel* createLabel(NativeObjectFactory* nativeObjectFactory);
-    virtual void setParametersFromObject(Local<Object> obj);
 protected:
     virtual ~TiUILabel();
     virtual void initializeTiObject(TiObject* parentContext);
-    virtual void onSetTextAlign(const char* align);
-    virtual void onSetFont(Handle<Object> font);
-    virtual void onSetBackgroundColor(const char* color);
 private:
     TiUILabel(NativeObjectFactory* nativeObjectFactory);
 };

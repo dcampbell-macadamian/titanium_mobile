@@ -12,6 +12,9 @@
 
 class TiCascadesApp;
 
+/*
+ * Titanium namespace
+ */
 class TiTitaniumObject : public TiObject
 {
 public:
@@ -19,7 +22,7 @@ public:
 protected:
     virtual ~TiTitaniumObject();
     virtual void onCreateStaticMembers();
-	virtual bool canAddMembers() const;
+    virtual bool canAddMembers() const;
 private:
     TiTitaniumObject();
     NativeObjectFactory* objectFactory_;

@@ -18,6 +18,7 @@ TiObject::TiObject()
     childObject_ = NULL;
     childObjectCount_ = 0;
     hasInitialized_ = false;
+    parentObject_ = NULL;
 }
 
 TiObject::TiObject(const char* objectName)
@@ -32,6 +33,7 @@ TiObject::TiObject(const char* objectName)
         value_.Dispose();
     }
     hasInitialized_ = false;
+    parentObject_ = NULL;
 }
 
 TiObject::TiObject(const char* objectName, Handle<Value> value)
@@ -42,6 +44,7 @@ TiObject::TiObject(const char* objectName, Handle<Value> value)
     childObject_ = NULL;
     childObjectCount_ = 0;
     value_ = Persistent < Value > ::New(value);
+    parentObject_ = NULL;
 }
 
 TiObject::~TiObject()
@@ -153,12 +156,14 @@ void TiObject::initializeTiObject(TiObject* parentContext)
     if (!hasInitialized())
     {
         hasInitialized_ = true;
+        parentObject_ = parentContext;
         onCreateStaticMembers();
     }
 }
 
 Handle<Value> TiObject::onFunctionCall(const Arguments& args)
 {
+    // Default function call returns "Undefined"
     return Undefined();
 }
 
@@ -171,7 +176,7 @@ const char* TiObject::getName() const
     return (name_ == NULL) ? "" : name_;
 }
 
-void TiObject::addMember(TiObject* object, const char* name)
+void TiObject::addMember(TiObject* object, const char* name/*=NULL*/)
 {
     HandleScope handleScope;
     int i;
@@ -226,22 +231,62 @@ void TiObject::onSetGetPropertyCallback(Handle<ObjectTemplate>* objTemplate)
     HandleScope handleScope;
     (*objTemplate)->SetNamedPropertyHandler(propGetter_, propSetter_);
 }
+
 void TiObject::onSetFunctionCallback(Handle<ObjectTemplate>* objTemplate)
 {
     HandleScope handleScope;
     (*objTemplate)->SetCallAsFunctionHandler(functCallback_);
 }
+
 void TiObject::onSetProperty(const char* propertyName, Local<Value> value)
 {
 }
-void TiObject::setValue(Handle<Value> value)
+
+void TiObject::onStartMessagePump()
 {
-    value_ = Persistent < Value > ::New(value);
+    int i;
+    for (i = 0; i < childObjectCount_; i++)
+    {
+        childObject_[i]->obj_->onStartMessagePump();
+    }
 }
-bool TiObject::userCanAddMember(const char* propertyName)
+
+VALUE_MODIFY TiObject::onValueChange(Handle<Value> oldValue, Handle<Value> newValue)
+{
+    return VALUE_MODIFY_ALLOW;
+}
+
+VALUE_MODIFY TiObject::onChildValueChange(TiObject* childObject, Handle<Value> oldValue, Handle<Value> newValue)
+{
+    return VALUE_MODIFY_ALLOW;
+}
+
+VALUE_MODIFY TiObject::setValue(Handle<Value> value)
+{
+    VALUE_MODIFY modify = onValueChange(value_, value);
+    if (modify != VALUE_MODIFY_ALLOW)
+    {
+        return modify;
+    }
+    TiObject* parent = getParentObject();
+    if (parent != NULL)
+    {
+        modify = onChildValueChange(this, value_, value);
+        parent->release();
+        if (modify != VALUE_MODIFY_ALLOW)
+        {
+            return modify;
+        }
+    }
+    value_ = Persistent < Value > ::New(value);
+    return modify;
+}
+
+bool TiObject::userCanAddMember(const char* propertyName) const
 {
     return true;
 }
+
 Handle<Value> TiObject::propGetter_(Local<String> prop, const AccessorInfo& info)
 {
     HandleScope handleScope;
@@ -282,27 +327,29 @@ Handle<Value> TiObject::propSetter_(Local<String> prop, Local<Value> value, cons
     TiObject* obj = getTiObjectFromJsObject(info.Holder());
     String::Utf8Value propName(prop);
     const char* propString = (const char*) (*propName);
-    if ((!obj->canAddMembers()) || (!obj->userCanAddMember(propString)))
+    TiObject* destObj = obj->onLookupMember(propString);
+    TiObject* srcObj = getTiObjectFromJsObject(value);
+    if (srcObj == NULL)
     {
-        return Undefined();
+        srcObj = new TiObject(propString);
+        srcObj->initializeTiObject(NULL);
+        srcObj->setValue(value);
+        setTiObjectToJsObject(value, srcObj);
     }
-    if (value->IsObject())
+    if (destObj == NULL)
     {
-        TiObject* obj2 = getTiObjectFromJsObject(value);
-        if (obj2 == NULL)
+        if ((!obj->canAddMembers()) || (!obj->userCanAddMember(propString)))
         {
-            obj2 = new TiObject(propString);
-            obj2->initializeTiObject(NULL);
-            obj2->setValue(value);
-            setTiObjectToJsObject(value, obj2);
+            srcObj->release();
+            return Undefined();
         }
-        if (obj2->getValue().IsEmpty())
-        {
-            obj2->setValue(value);
-        }
-        obj->addMember(obj2, propString);
+        destObj = srcObj;
     }
+    destObj->setValue(value);
+    setTiObjectToJsObject(value, destObj);
+    obj->addMember(destObj, propString);
     obj->onSetProperty(propString, value);
+    srcObj->release();
     return value;
 }
 Handle<Value> TiObject::functCallback_(const Arguments& args)
@@ -316,7 +363,7 @@ Handle<Value> TiObject::functCallback_(const Arguments& args)
     return handleScope.Close(obj->onFunctionCall(args));
 }
 
-bool TiObject::hasMembers()
+bool TiObject::hasMembers() const
 {
     return (childObjectCount_ == 0) ? false : true;
 }
@@ -339,6 +386,19 @@ bool TiObject::hasInitialized() const
 bool TiObject::isUIObject() const
 {
     return false;
+}
+
+void TiObject::setTiMappingProperties(const TI_PROPERTY* prop, int propertyCount)
+{
+}
+
+TiObject* TiObject::getParentObject() const
+{
+    if (parentObject_ != NULL)
+    {
+        parentObject_->addRef();
+    }
+    return parentObject_;
 }
 
 OBJECT_ENTRY::OBJECT_ENTRY()

@@ -30,6 +30,7 @@ void TiTitaniumObject::onCreateStaticMembers()
 {
     ADD_STATIC_TI_VALUE("buildDate", String::New(__DATE__), this);
     ADD_STATIC_TI_VALUE("version", Number::New(2.0), this);
+    // TODO: remove hard coded version number
     TiUIObject::addObjectToParent(this, objectFactory_);
     TiAPIObject::addObjectToParent(this);
 }

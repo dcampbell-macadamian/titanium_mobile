@@ -12,6 +12,9 @@
 
 class TiCascadesApp;
 
+/*
+ * Titanium.UI namespace
+ */
 class TiUIObject : public TiObject
 {
 public:
@@ -22,10 +25,9 @@ protected:
 private:
     TiUIObject();
     TiUIObject(NativeObjectFactory* objectFactory);
-	static Handle<Value> setBackgroundColor_(void* userContext,TiObject* caller,const Arguments& args);
-	static Handle<Value> createTabGroup_(void* userContext,TiObject* caller,const Arguments& args);
-    static Handle<Value> createWindow_(void* userContext,TiObject* caller,const Arguments& args);
-    static Handle<Value> createLabel_(void* userContext,TiObject* caller,const Arguments& args);
+    static Handle<Value> createTabGroup_(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> createWindow_(void* userContext, TiObject* caller, const Arguments& args);
+    static Handle<Value> createLabel_(void* userContext, TiObject* caller, const Arguments& args);
     NativeObjectFactory* objectFactory_;
     NativeObject* contentContainer_;
 };

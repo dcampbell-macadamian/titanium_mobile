@@ -11,6 +11,7 @@
 NativeObject::NativeObject()
 {
     refCount_ = 1;
+    isInitializationComplete_ = 0;
 }
 
 NativeObject::~NativeObject()
@@ -31,27 +32,7 @@ void NativeObject::release()
     }
 }
 
-int NativeObject::setColor(const char* color)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
-int NativeObject::setBackgroundColor(const char* color)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
-int NativeObject::setBackgroundImage(const char* image)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
-int NativeObject::setText(const char* text)
-{
-    return NATIVE_ERROR_NOTSUPPORTED;
-}
-
-int NativeObject::setFont(const char* family, const char* fontSize, const char* fontStyle, const char* fontWeigth)
+int NativeObject::setPropertyValue(int propertyNumber, const char* value)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
@@ -74,4 +55,13 @@ NAHANDLE NativeObject::getNativeHandle() const
 int NativeObject::open()
 {
     return NATIVE_ERROR_NOTSUPPORTED;
+}
+
+void NativeObject::completeInitialization()
+{
+    isInitializationComplete_ = 1;
+}
+int NativeObject::isInitializationComplete() const
+{
+    return isInitializationComplete_;
 }
