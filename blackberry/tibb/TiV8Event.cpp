@@ -32,6 +32,10 @@ void TiV8Event::fire(void* fireDataObject)
     }
     Handle<Object> dataObject = *((Persistent<Object>*) fireDataObject);
     dataObject->Set(String::New("source"), source_);
+    // This calls the Javascript event handler function in the form: function(e) {...}
+    // The "1" in the following line refers to the number of arguments
+    // being passed to the handler. In this case, one argument: "e". This argument
+    // is a Javascript object with various properties relating to the triggered event.
     function_->Call(function_, 1, (Handle<Value>*) &dataObject);
 }
 
