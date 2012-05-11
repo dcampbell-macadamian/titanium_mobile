@@ -13,3 +13,16 @@ xcuserdata
 *.LOCAL.*
 *.REMOTE.*
 *.o
+blackberry/.metadata
+blackberry/BB Simulator R3
+blackberry/BB Simulator
+blackberry/Colt
+blackberry/LightningCrossfadeCpp2
+blackberry/cashello
+blackberry/lightningcrossfadecpp
+blackberry/test
+blackberry/tibb/arm
+blackberrt/tibb/x86
+blackberry/tibbtest/arm
+blackberry/tibbtest/x86
+
