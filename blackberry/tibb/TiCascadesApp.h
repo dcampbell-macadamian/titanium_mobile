@@ -10,6 +10,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QMetaType>
+#include <bb/cascades/Application>
 
 class NativeObject;
 
@@ -19,15 +20,18 @@ class NativeObject;
  * Cascades application object
  */
 
-class TiCascadesApp : public QObject
+class TiCascadesApp : public bb::cascades::Application
 {
     Q_OBJECT
 
+public slots:
+    void Shutdown(QObject*);
 public:
-    TiCascadesApp();
+    TiCascadesApp(int& argc, char** argv);
     virtual ~TiCascadesApp();
     void initializeApp();
     void setScene(NativeObject* mainWindow);
+    virtual bool notify(QObject* receiver, QEvent* event);
 };
 
 #endif /* TICASCADESAPP_H_ */

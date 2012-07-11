@@ -50,19 +50,19 @@ int TitaniumRuntime::run(const char* javaScript, int argc, char** argv)
 
 int TitaniumRuntime::internalRun(int argc, char** argv)
 {
+    TiCascadesApp mainApp(argc, argv);
+    int ret = 0;
     TiRootObject* obj;
     obj = TiRootObject::createRootObject();
     rootObject_.attachTiObject(obj);
-    bb::cascades::Application app(argc, argv);
-    TiCascadesApp mainApp;
     mainApp.initializeApp();
     NativeObjectFactory objFactory(&mainApp);
     objectFactory_ = &objFactory;
     mainApp_ = &mainApp;
     TiLogger::initialize(&objFactory);
-    int ret = obj->executeScript(&objFactory, javaScript_, messageLoop, this);
+    ret = obj->executeScript(&objFactory, javaScript_, messageLoop, this);
     // TODO: handle non-zero return code here
-    obj->release();
+    //obj->release();
     return ret;
 }
 

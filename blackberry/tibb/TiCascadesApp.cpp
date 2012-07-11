@@ -13,7 +13,8 @@
 
 using namespace bb::cascades;
 
-TiCascadesApp::TiCascadesApp()
+TiCascadesApp::TiCascadesApp(int& argc, char** argv):
+    Application(argc, argv)
 {
 }
 
@@ -31,8 +32,17 @@ void TiCascadesApp::setScene(NativeObject* mainWindow)
         AbstractPane* pane = (AbstractPane*)(mainWindow->getNativeHandle());
         if (pane != NULL)
         {
+            QObject::connect(pane, SIGNAL(destroyed(QObject*)), this, SLOT(Shutdown(QObject*)));
             Application::setScene(pane);
         }
     }
 }
 
+void TiCascadesApp::Shutdown(QObject*)
+{
+}
+
+bool TiCascadesApp::notify(QObject* receiver, QEvent* event)
+{
+    return bb::cascades::Application::notify(receiver, event);
+}

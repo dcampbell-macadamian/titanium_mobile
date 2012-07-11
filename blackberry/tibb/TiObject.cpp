@@ -74,27 +74,12 @@ char* TiObject::getStringFromObject(Handle<Value> value, const char* defaultStri
 {
     char* str = NULL;
     HandleScope handleScope;
-    if (value->IsString())
-    {
-        Handle<String> v8str = Handle<String>::Cast(value);
-        String::Utf8Value v8utf8str(v8str);
-        str = new char[strlen(*v8utf8str) + 1];
-        strcpy(str, *v8utf8str);
-    }
-    // TODO: complete object "as string"
-    /*
-     else if(value->IsObject())
-     {
-     Handle<Object> v8obj=Handle<Object>::Cast(value);
-
-     }
-     */
-    else
-    {
-        str = new char[strlen((defaultString == NULL) ? "" : defaultString) + 1];
-        strcpy(str, (defaultString == NULL) ? "" : defaultString);
-
-    }
+    Handle<String> v8str = value->ToString();
+    String::Utf8Value v8utf8str(v8str);
+    str = new char[strlen(*v8utf8str) + 1];
+    strcpy(str, *v8utf8str);
+    str = new char[strlen((defaultString == NULL) ? "" : defaultString) + 1];
+    strcpy(str, (defaultString == NULL) ? "" : defaultString);
     return str;
 }
 
@@ -340,6 +325,7 @@ Handle<Value> TiObject::propGetter_(Local<String> prop, const AccessorInfo& info
     Handle<Value> ret = propObject->getValue();
     if (!ret.IsEmpty())
     {
+        propObject->release();
         return handleScope.Close(ret);
     }
     if ((propObject->hasMembers()) || (propObject->isFunction()))
@@ -433,6 +419,7 @@ bool TiObject::isUIObject() const
 
 void TiObject::setTiMappingProperties(const TiProperty* prop, int propertyCount)
 {
+    // Default does nothing. This can be overridden.
 }
 
 TiObject* TiObject::getParentObject() const

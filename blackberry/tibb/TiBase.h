@@ -20,6 +20,7 @@ class TiBase
 public:
     virtual void addRef();
     virtual void release();
+    static int getGlobalRefCount();
 
 protected:
     TiBase();
