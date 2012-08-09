@@ -12,6 +12,7 @@
 
 #include <bb/cascades/Color>
 #include <QRect>
+#include <QString>
 
 
 class QString;
@@ -73,6 +74,7 @@ public:
     virtual int getBottom(TiObject* obj);
     virtual int getPropertyValue(size_t propertyNumber, TiObject* obj);
     virtual int getHeight(TiObject* obj);
+    virtual int getLayout(TiObject* obj);
     virtual int getLeft(TiObject* obj);
     virtual int getRect(TiObject* obj);
     virtual int getRight(TiObject* obj);
@@ -93,6 +95,7 @@ public:
     virtual int setIcon(TiObject* obj);
     virtual int setImage(TiObject* obj);
     virtual int setLabel(TiObject* obj);
+    virtual int setLayout(TiObject* obj);
     virtual int setLeft(TiObject* obj);
     virtual int setMax(TiObject* obj);
     virtual int setMaxDate(TiObject* obj);
@@ -153,6 +156,7 @@ private:
     float height_;
     float right_;
     QRectF rect_;
+    QString layoutName_;
 };
 
 // Event handler for Ti.UI.View

@@ -161,6 +161,7 @@ NativeControlObject::NativeControlObject() :
             g_physicalHeight = (float)g_height / DPMM;
         }
     }
+    layout_ = "composite";
 }
 
 NativeControlObject::~NativeControlObject()
@@ -406,6 +407,45 @@ int NativeControlObject::setLabel(TiObject*)
 {
     return NATIVE_ERROR_NOTSUPPORTED;
 }
+
+PROP_SETGET(setLayout)
+int NativeControlObject::setLayout(TiObject* obj)
+{
+    Q_ASSERT(container_ != NULL);
+    Q_ASSERT(obj != NULL);
+    QString layoutqString;
+    int error = getString(obj, layoutqString);
+    if (error != NATIVE_ERROR_OK)
+    {
+        return error;
+    }
+    if (layoutqString.compare(QString("composite")) == 0)
+    {
+
+    }
+    else if (layoutqString.compare(QString("vertical")) == 0)
+    {
+
+    }
+    else if (layoutqString.compare(QString("horizontal")) == 0)
+    {
+
+    }
+    else
+    {
+        return NATIVE_ERROR_NOTSUPPORTED;
+    }
+    layoutName_ = layoutqString;
+    return NATIVE_ERROR_OK;
+}
+
+PROP_SETGET(getLayout)
+int NativeControlObject::getLayout(TiObject* obj)
+{
+    obj->setValue(String::New(layoutName_.toStdString().c_str()));
+    return NATIVE_ERROR_OK;
+}
+
 
 PROP_SETGET(setLeft)
 int NativeControlObject::setLeft(TiObject* obj)
@@ -687,6 +727,7 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_ICON, PROP_SETGET_FUNCTION(setIcon), NULL},
     {N_PROP_IMAGE, PROP_SETGET_FUNCTION(setImage), NULL},
     {N_PROP_LABEL, PROP_SETGET_FUNCTION(setLabel), NULL},
+    {N_PROP_LAYOUT, PROP_SETGET_FUNCTION(setLayout), PROP_SETGET_FUNCTION(getLayout)},
     {N_PROP_LEFT, PROP_SETGET_FUNCTION(setLeft), PROP_SETGET_FUNCTION(getLeft)},
     {N_PROP_MAX, PROP_SETGET_FUNCTION(setMax), NULL},
     {N_PROP_MAXDATE, PROP_SETGET_FUNCTION(setMaxDate), NULL},

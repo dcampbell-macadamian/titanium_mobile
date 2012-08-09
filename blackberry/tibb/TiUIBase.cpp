@@ -151,6 +151,11 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
+        "layout", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_LAYOUT
+    },
+
+    {
         "opacity", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_OPACITY
     },
