@@ -421,6 +421,12 @@ int NativeControlObject::setLeft(TiObject* obj)
     return NATIVE_ERROR_OK;
 }
 
+PROP_SETGET(setLeftImage)
+int NativeControlObject::setLeftImage(TiObject*)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
 PROP_SETGET(setBottom)
 int NativeControlObject::setBottom(TiObject* obj)
 {
@@ -603,6 +609,12 @@ int NativeControlObject::getRight(TiObject* obj)
     return NATIVE_ERROR_OK;
 }
 
+PROP_SETGET(setRightImage)
+int NativeControlObject::setRightImage(TiObject*)
+{
+    return NATIVE_ERROR_NOTSUPPORTED;
+}
+
 PROP_SETGET(getRect)
 int NativeControlObject::getRect(TiObject* obj)
 {
@@ -688,6 +700,7 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_IMAGE, PROP_SETGET_FUNCTION(setImage), NULL},
     {N_PROP_LABEL, PROP_SETGET_FUNCTION(setLabel), NULL},
     {N_PROP_LEFT, PROP_SETGET_FUNCTION(setLeft), PROP_SETGET_FUNCTION(getLeft)},
+    {N_PROP_LEFT_IMAGE, PROP_SETGET_FUNCTION(setLeftImage), NULL},
     {N_PROP_MAX, PROP_SETGET_FUNCTION(setMax), NULL},
     {N_PROP_MAXDATE, PROP_SETGET_FUNCTION(setMaxDate), NULL},
     {N_PROP_MESSAGE, PROP_SETGET_FUNCTION(setMessage), NULL},
@@ -697,6 +710,7 @@ const static NATIVE_PROPSETGET_SETTING g_propSetGet[] =
     {N_PROP_OPTIONS, PROP_SETGET_FUNCTION(setOptions), NULL},
     {N_PROP_RECT, NULL, PROP_SETGET_FUNCTION(getRect)},
     {N_PROP_RIGHT, PROP_SETGET_FUNCTION(setRight), PROP_SETGET_FUNCTION(getRight)},
+    {N_PROP_RIGHT_IMAGE, PROP_SETGET_FUNCTION(setRightImage), NULL},
     {N_PROP_SELECTED_INDEX, PROP_SETGET_FUNCTION(setSelectedIndex), NULL},
     {N_PROP_SIZE, NULL, PROP_SETGET_FUNCTION(getSize)},
     {N_PROP_TEXT, PROP_SETGET_FUNCTION(setText), NULL},

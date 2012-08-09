@@ -94,6 +94,7 @@ public:
     virtual int setImage(TiObject* obj);
     virtual int setLabel(TiObject* obj);
     virtual int setLeft(TiObject* obj);
+    virtual int setLeftImage(TiObject* obj);
     virtual int setMax(TiObject* obj);
     virtual int setMaxDate(TiObject* obj);
     virtual int setMessage(TiObject* obj);
@@ -103,6 +104,7 @@ public:
     virtual int setOptions(TiObject* obj);
     virtual int setPropertyValue(size_t propertyNumber, TiObject* obj);
     virtual int setRight(TiObject* obj);
+    virtual int setRightImage(TiObject* obj);
     virtual int setSelectedIndex(TiObject* obj);
     virtual int setText(TiObject* obj);
     virtual int setTextAlign(TiObject* obj);

@@ -101,6 +101,11 @@ const static TiProperty g_tiProperties[] =
     },
 
     {
+        "leftImage", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_LEFT_IMAGE
+    },
+
+    {
         "max", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_MAX
     },
@@ -133,6 +138,11 @@ const static TiProperty g_tiProperties[] =
     {
         "right", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
         N_PROP_RIGHT
+    },
+
+    {
+        "rightImage", TI_PROP_PERMISSION_READ | TI_PROP_PERMISSION_WRITE,
+        N_PROP_RIGHT_IMAGE
     },
 
     {

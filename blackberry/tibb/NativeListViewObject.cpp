@@ -7,16 +7,24 @@
 
 #include "NativeListViewObject.h"
 
-#include <bb/cascades/AbsoluteLayoutProperties>
+#include <bb/cascades/Container>
 #include <bb/cascades/DataModel>
+#include <bb/cascades/Image>
+#include <bb/cascades/ImageView>
 #include <bb/cascades/ListView>
 #include <bb/cascades/QListDataModel>
+#include <bb/cascades/Label>
 #include <bb/cascades/ListItemManager>
 #include <bb/cascades/VisualNode>
+#include <bb/cascades/DockLayout>
+#include <bb/cascades/DockLayoutProperties>
+#include <bb/cascades/HorizontalAlignment>
+#include <bb/cascades/VerticalAlignment>
 #include "NativeListViewObject.h"
 #include "PersistentV8Value.h"
 #include "TiEventContainerFactory.h"
 #include "TiObject.h"
+#include "NativeListViewRowObject.h"
 
 NativeListViewObject::NativeListViewObject()
 {
@@ -97,8 +105,16 @@ void NativeListViewObject::setupEvents(TiEventContainerFactory* containerFactory
 /*********** ListViewItemFactory class *************/
 bb::cascades::VisualNode* ListViewItemFactory::createItem(bb::cascades::ListView*, const QString&)
 {
-    bb::cascades::StandardListItem* item = new bb::cascades::StandardListItem();
-    return item;
+    TiListViewRow* row = new TiListViewRow();
+    row->setBackground(bb::cascades::Color::LightGray);
+    row->setLayout(new bb::cascades::DockLayout());
+    bb::cascades::DockLayoutProperties* properties = bb::cascades::DockLayoutProperties::create();
+    properties->setHorizontalAlignment(bb::cascades::HorizontalAlignment::Fill);
+    properties->setVerticalAlignment(bb::cascades::VerticalAlignment::Center);
+    row->setLayoutProperties(properties);
+    row->setPreferredWidth(2000.0f);
+    row->setBottomMargin(1.0f);
+    return row;
 }
 
 void ListViewItemFactory::updateItem(bb::cascades::ListView*, bb::cascades::VisualNode* listItem, const QString&,
@@ -111,10 +127,44 @@ void ListViewItemFactory::updateItem(bb::cascades::ListView*, bb::cascades::Visu
         Persistent<Value> propValue = v8Value.getValue();
         if (propValue->IsObject())
         {
-            Local<Value> titleValue = propValue->ToObject()->Get(String::New("title"));
-            Local<String> valueStr = titleValue->ToString();
-            String::Utf8Value valueUTF(valueStr);
-            ((bb::cascades::StandardListItem*)listItem)->setTitle(*valueUTF);
+            TiListViewRow* row = (TiListViewRow*)listItem;
+            row->removeAll();
+            TiObject* tiObj = TiObject::getTiObjectFromJsObject(propValue);
+            NativeObject* nObj = NULL;
+            if (tiObj != NULL)
+            {
+                nObj = tiObj->getNativeObject();
+            }
+            if (nObj == NULL)
+            {
+                Local<Value> titleValue = propValue->ToObject()->Get(String::New("title"));
+                Local<String> valueStr = titleValue->ToString();
+                String::Utf8Value valueUTF(valueStr);
+                bb::cascades::Label* label = bb::cascades::Label::create();
+                label->setText(QString(*valueUTF));
+                Local<Value> leftImage = propValue->ToObject()->Get(String::New("leftImage"));
+                if (!leftImage->IsUndefined())
+                {
+                    String::Utf8Value leftImageStrUTF(leftImage->ToString());
+                    bb::cascades::ImageView* leftImageView = new bb::cascades::ImageView();
+                    leftImageView->setImage(bb::cascades::Image(QString(*leftImageStrUTF)));
+                    row->add(leftImageView);
+                }
+                row->add(label);
+                Local<Value> rightImage = propValue->ToObject()->Get(String::New("rightImage"));
+                if (!rightImage->IsUndefined())
+                {
+                    String::Utf8Value rightImageStrUTF(rightImage->ToString());
+                    bb::cascades::ImageView* rightImageView = new bb::cascades::ImageView();
+                    rightImageView->setImage(bb::cascades::Image(QString(*rightImageStrUTF)));
+                    row->add(rightImageView);
+                }
+            }
+            else
+            {
+                row->add((bb::cascades::Control*)nObj->getNativeHandle());
+                nObj->release();
+            }
         }
     }
 }
